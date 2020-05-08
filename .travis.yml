@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t antipyrrhus/react-test -f .client/Dockerfile.dev
+
+script:
+  - docker run antipyrrhus/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t antipyrrhus/multi-client ./client
+  - docker build -t antipyrrhus/multi-nginx ./nginx
+  - docker build -t antipyrrhus/multi-server ./server
+  - docker build -t antipyrrhus/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push antipyrrhus/multi-client
+  - docker push antipyrrhus/multi-nginx
+  - docker push antipyrrhus/multi-server
+  - docker push antipyrrhus/multi-worker
